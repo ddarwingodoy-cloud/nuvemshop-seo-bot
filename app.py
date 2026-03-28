@@ -73,7 +73,7 @@ def atualizar_categoria():
     store_id = "7487712"
 
     headers = {
-        "Authentication": f"bearer {access_token}",
+        "Authentication": f"Bearer {access_token}",
         "User-Agent": "nuvemshop-seo-bot",
         "Content-Type": "application/json"
     }
