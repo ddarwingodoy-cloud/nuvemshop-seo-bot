@@ -67,6 +67,40 @@ def categorias():
 
     return response.text
 
+@app.route("/atualizar-categoria")
+def atualizar_categoria():
+    access_token = "COLE_AQUI_SEU_ACCESS_TOKEN"
+    store_id = "COLE_AQUI_SEU_USER_ID"
+
+    headers = {
+        "Authentication": f"bearer {access_token}",
+        "User-Agent": "nuvemshop-seo-bot",
+        "Content-Type": "application/json"
+    }
+
+    categoria_id = 37845299
+
+    url = f"https://api.tiendanube.com/v1/{store_id}/categories/{categoria_id}"
+
+    payload = {
+        "name": {
+            "pt": "Teste SEO"
+        },
+        "description": {
+            "pt": "Categoria de teste"
+        },
+        "seo_title": {
+            "pt": "Teste SEO | Ceramicando"
+        },
+        "seo_description": {
+            "pt": "Categoria de teste para validar atualização de SEO via API na Nuvemshop."
+        }
+    }
+
+    response = requests.put(url, headers=headers, json=payload)
+
+    return response.text
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
