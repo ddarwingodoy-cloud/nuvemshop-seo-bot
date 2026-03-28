@@ -28,5 +28,38 @@ def callback():
 
     return f"Resposta da API: {response.text}"
 
+
+# 👇 NOVO ENDPOINT PARA PEGAR STORE_ID
+@app.route("/loja")
+def dados_loja():
+    access_token = "COLE_AQUI_SEU_TOKEN"
+
+    headers = {
+        "Authentication": f"bearer {access_token}"
+    }
+
+    url = "https://api.tiendanube.com/v1/store"
+
+    response = requests.get(url, headers=headers)
+
+    return response.text
+
+
+# 👇 CATEGORIAS (ainda com placeholder)
+@app.route("/categorias")
+def listar_categorias():
+    access_token = "df71a2fdbd57e5b7354c882c6a7f1680ede19a56"
+
+    headers = {
+        "Authentication": f"bearer {access_token}"
+    }
+
+    url = "https://api.tiendanube.com/v1/SEU_STORE_ID/categories"
+
+    response = requests.get(url, headers=headers)
+
+    return response.text
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
