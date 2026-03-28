@@ -38,7 +38,7 @@ def loja():
     access_token = "df71a2fdbd57e5b7354c882c6a7f1680ede19a56"
 
     headers = {
-        "Authentication": f"bearer {access_token}",
+        "Authentication": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
 
@@ -56,7 +56,7 @@ def categorias():
     store_id = "7487712"
 
     headers = {
-        "Authentication": f"bearer {access_token}",
+        "Authentication": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
 
