@@ -69,8 +69,8 @@ def categorias():
 
 @app.route("/atualizar-categoria")
 def atualizar_categoria():
-    access_token = "COLE_AQUI_SEU_ACCESS_TOKEN"
-    store_id = "COLE_AQUI_SEU_USER_ID"
+    access_token = "df71a2fdbd57e5b7354c882c6a7f1680ede19a56"
+    store_id = "7487712"
 
     headers = {
         "Authentication": f"bearer {access_token}",
