@@ -36,13 +36,14 @@ def callback():
 @app.route("/loja")
 def loja():
     access_token = "df71a2fdbd57e5b7354c882c6a7f1680ede19a56"
+    store_id = "7487712"
 
     headers = {
-        "Authentication": f"Bearer {access_token}",
-        "Content-Type": "application/json"
+        "Authentication": f"bearer {access_token}",
+        "User-Agent": "nuvemshop-seo-bot"
     }
 
-    url = "https://api.tiendanube.com/v1/store"
+    url = f"https://api.tiendanube.com/v1/{store_id}/categories"
 
     response = requests.get(url, headers=headers)
 
