@@ -4,10 +4,13 @@ import os
 
 app = Flask(__name__)
 
+# 🔹 HOME
 @app.route("/")
 def home():
-    return "App rodando"
+    return "App rodando 🚀"
 
+
+# 🔹 CALLBACK (gera o access_token)
 @app.route("/callback")
 def callback():
     code = request.args.get("code")
@@ -26,16 +29,17 @@ def callback():
 
     response = requests.post(url, json=payload)
 
-    return f"Resposta da API: {response.text}"
+    return response.text
 
 
-# 👇 NOVO ENDPOINT PARA PEGAR STORE_ID
+# 🔹 TESTE 1: DADOS DA LOJA (descobrir store_id)
 @app.route("/loja")
-def dados_loja():
-    access_token = "COLE_AQUI_SEU_TOKEN"
+def loja():
+    access_token = "df71a2fdbd57e5b7354c882c6a7f1680ede19a56"
 
     headers = {
-        "Authentication": f"bearer {access_token}"
+        "Authentication": f"bearer {access_token}",
+        "Content-Type": "application/json"
     }
 
     url = "https://api.tiendanube.com/v1/store"
@@ -45,16 +49,18 @@ def dados_loja():
     return response.text
 
 
-# 👇 CATEGORIAS (ainda com placeholder)
+# 🔹 TESTE 2: CATEGORIAS (usar depois que tiver store_id)
 @app.route("/categorias")
-def listar_categorias():
+def categorias():
     access_token = "df71a2fdbd57e5b7354c882c6a7f1680ede19a56"
+    store_id = "7487712"
 
     headers = {
-        "Authentication": f"bearer {access_token}"
+        "Authentication": f"bearer {access_token}",
+        "Content-Type": "application/json"
     }
 
-    url = "https://api.tiendanube.com/v1/SEU_STORE_ID/categories"
+    url = f"https://api.tiendanube.com/v1/{store_id}/categories"
 
     response = requests.get(url, headers=headers)
 
