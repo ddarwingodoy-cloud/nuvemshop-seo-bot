@@ -151,6 +151,37 @@ def atualizar_categoria_dinamica(categoria_id):
 
     return response.text
 
+# 🔹 ORGANIZANDO ENDPOINTS: REVISÃO ESTRUTURADA
+@app.route("/atualizar-categoria-flex/<int:categoria_id>")
+def atualizar_categoria_flex(categoria_id):
+    access_token = os.environ.get("NUVEMSHOP_ACCESS_TOKEN")
+    store_id = os.environ.get("NUVEMSHOP_STORE_ID")
+
+    seo_title = request.args.get("seo_title", "")
+    seo_description = request.args.get("seo_description", "")
+
+    headers = {
+        "Authentication": f"bearer {access_token}",
+        "User-Agent": "nuvemshop-seo-bot",
+        "Content-Type": "application/json"
+    }
+
+    url = f"https://api.tiendanube.com/v1/{store_id}/categories/{categoria_id}"
+
+    payload = {
+        "seo_title": {
+            "pt": seo_title
+        },
+        "seo_description": {
+            "pt": seo_description
+        }
+    }
+
+    response = requests.put(url, headers=headers, json=payload)
+
+    return response.text
+
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
