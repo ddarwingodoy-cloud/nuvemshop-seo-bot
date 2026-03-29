@@ -35,8 +35,8 @@ def callback():
 # 🔹 TESTE 1: DADOS DA LOJA (descobrir store_id)
 @app.route("/loja")
 def loja():
-    access_token = "df71a2fdbd57e5b7354c882c6a7f1680ede19a56"
-    store_id = "7487712"
+    access_token = os.environ.get("NUVEMSHOP_ACCESS_TOKEN")
+    store_id = os.environ.get("NUVEMSHOP_STORE_ID")
 
     headers = {
         "Authentication": f"bearer {access_token}",
@@ -69,8 +69,8 @@ def categorias():
 
 @app.route("/atualizar-categoria")
 def atualizar_categoria():
-    access_token = "df71a2fdbd57e5b7354c882c6a7f1680ede19a56"
-    store_id = "7487712"
+    access_token = os.environ.get("NUVEMSHOP_ACCESS_TOKEN")
+    store_id = os.environ.get("NUVEMSHOP_STORE_ID")
 
     headers = {
     "Authentication": f"bearer {access_token}",
