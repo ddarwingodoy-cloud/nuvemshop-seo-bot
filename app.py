@@ -49,6 +49,23 @@ def loja():
 
     return response.text
 
+# 🔹 ORGANIZANDO ENDPOINTS: CATEGORIAS
+@app.route("/categoria/<int:categoria_id>")
+def get_categoria(categoria_id):
+    access_token = os.environ.get("NUVEMSHOP_ACCESS_TOKEN")
+    store_id = os.environ.get("NUVEMSHOP_STORE_ID")
+
+    headers = {
+        "Authentication": f"bearer {access_token}",
+        "User-Agent": "nuvemshop-seo-bot"
+    }
+
+    url = f"https://api.tiendanube.com/v1/{store_id}/categories/{categoria_id}"
+
+    response = requests.get(url, headers=headers)
+
+    return response.text
+
 
 # 🔹 TESTE 2: CATEGORIAS (usar depois que tiver store_id)
 @app.route("/categorias")
