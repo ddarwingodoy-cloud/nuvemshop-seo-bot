@@ -230,6 +230,79 @@ def atualizar_categoria_json(categoria_id: int):
 
     return put_response.text, put_response.status_code, {"Content-Type": "application/json; charset=utf-8"}
 
+# 🔹 LISTAR PRODUTOS
+@app.route("/produtos")
+def listar_produtos():
+    access_token, store_id = get_env_credentials()
+
+    url = f"{BASE_URL}/{store_id}/products"
+    response = requests.get(url, headers=get_headers(access_token), timeout=30)
+
+    return response.text, response.status_code, {"Content-Type": "application/json; charset=utf-8"}
+
+
+# 🔹 PRODUTO POR ID
+@app.route("/produto/<int:produto_id>")
+def get_produto(produto_id: int):
+    access_token, store_id = get_env_credentials()
+
+    url = f"{BASE_URL}/{store_id}/products/{produto_id}"
+    response = requests.get(url, headers=get_headers(access_token), timeout=30)
+
+    return response.text, response.status_code, {"Content-Type": "application/json; charset=utf-8"}
+
+
+# 🔹 PRODUTO PARA REVISÃO
+@app.route("/produto-revisao/<int:produto_id>")
+def produto_revisao(produto_id: int):
+    access_token, store_id = get_env_credentials()
+
+    url = f"{BASE_URL}/{store_id}/products/{produto_id}"
+    response = requests.get(url, headers=get_headers(access_token), timeout=30)
+
+    if response.status_code != 200:
+        return response.text, response.status_code
+
+    produto = response.json()
+
+    revisao = {
+        "id": produto.get("id"),
+        "name": produto.get("name", {}),
+        "description": produto.get("description", {}),
+        "seo_title": produto.get("seo_title", {}),
+        "seo_description": produto.get("seo_description", {}),
+        "handle": produto.get("handle", {})
+    }
+
+    return jsonify(revisao)
+
+
+# 🔹 ATUALIZAR PRODUTO
+@app.route("/atualizar-produto-json/<int:produto_id>", methods=["POST"])
+def atualizar_produto_json(produto_id: int):
+    access_token, store_id = get_env_credentials()
+
+    headers = get_headers(access_token)
+    url = f"{BASE_URL}/{store_id}/products/{produto_id}"
+
+    # lê atual
+    get_response = requests.get(url, headers=headers, timeout=30)
+    produto_atual = get_response.json()
+
+    body = request.get_json(silent=True) or {}
+
+    payload = {
+        "name": merge_translations(produto_atual.get("name", {}), body.get("name", {})),
+        "description": merge_translations(produto_atual.get("description", {}), body.get("description", {})),
+        "handle": merge_translations(produto_atual.get("handle", {}), body.get("handle", {})),
+        "seo_title": merge_translations(produto_atual.get("seo_title", {}), body.get("seo_title", {})),
+        "seo_description": merge_translations(produto_atual.get("seo_description", {}), body.get("seo_description", {})),
+    }
+
+    put_response = requests.put(url, headers=headers, json=payload, timeout=30)
+
+    return put_response.text, put_response.status_code
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
