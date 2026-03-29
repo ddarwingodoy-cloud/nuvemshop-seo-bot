@@ -133,6 +133,53 @@ def atualizar_categoria(categoria_id: int):
 
     return put_response.text, put_response.status_code, {"Content-Type": "application/json; charset=utf-8"}
 
+    # 4. Organizando o Json
+@app.route("/categoria-revisao/<int:categoria_id>")
+def categoria_revisao(categoria_id: int):
+    access_token, store_id = get_env_credentials()
+
+    if not access_token or not store_id:
+        return jsonify({"error": "Variáveis NUVEMSHOP_ACCESS_TOKEN ou NUVEMSHOP_STORE_ID não configuradas"}), 500
+
+    url = f"{BASE_URL}/{store_id}/categories/{categoria_id}"
+    response = requests.get(url, headers=get_headers(access_token), timeout=30)
+
+    if response.status_code != 200:
+        return response.text, response.status_code, {"Content-Type": "application/json; charset=utf-8"}
+
+    categoria = response.json()
+
+    revisao = {
+        "id": categoria.get("id"),
+        "name": {
+            "pt": categoria.get("name", {}).get("pt", ""),
+            "es": categoria.get("name", {}).get("es", ""),
+            "en": categoria.get("name", {}).get("en", "")
+        },
+        "handle": {
+            "pt": categoria.get("handle", {}).get("pt", ""),
+            "es": categoria.get("handle", {}).get("es", ""),
+            "en": categoria.get("handle", {}).get("en", "")
+        },
+        "description": {
+            "pt": categoria.get("description", {}).get("pt", ""),
+            "es": categoria.get("description", {}).get("es", ""),
+            "en": categoria.get("description", {}).get("en", "")
+        },
+        "seo_title": {
+            "pt": categoria.get("seo_title", {}).get("pt", ""),
+            "es": categoria.get("seo_title", {}).get("es", ""),
+            "en": categoria.get("seo_title", {}).get("en", "")
+        },
+        "seo_description": {
+            "pt": categoria.get("seo_description", {}).get("pt", ""),
+            "es": categoria.get("seo_description", {}).get("es", ""),
+            "en": categoria.get("seo_description", {}).get("en", "")
+        }
+    }
+
+    return jsonify(revisao)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
