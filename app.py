@@ -166,9 +166,16 @@ def atualizar_categoria_flex(categoria_id):
         "Content-Type": "application/json"
     }
 
-    url = f"https://api.tiendanube.com/v1/{store_id}/categories/{categoria_id}"
+    # 1. Lê a categoria atual
+    get_url = f"https://api.tiendanube.com/v1/{store_id}/categories/{categoria_id}"
+    get_response = requests.get(get_url, headers=headers)
+    categoria_atual = get_response.json()
 
+    # 2. Monta payload preservando os campos existentes
     payload = {
+        "name": categoria_atual.get("name", {}),
+        "handle": categoria_atual.get("handle", {}),
+        "description": categoria_atual.get("description", {}),
         "seo_title": {
             "pt": seo_title
         },
@@ -177,9 +184,10 @@ def atualizar_categoria_flex(categoria_id):
         }
     }
 
-    response = requests.put(url, headers=headers, json=payload)
+    # 3. Atualiza
+    put_response = requests.put(get_url, headers=headers, json=payload)
 
-    return response.text
+    return put_response.text
 
 
 
