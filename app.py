@@ -118,6 +118,39 @@ def atualizar_categoria():
 
     return response.text
 
+# 🔹 ORGANIZANDO ENDPOINTS: ATUALIZAÇÃO DINÂMICA
+@app.route("/atualizar-categoria/<int:categoria_id>")
+def atualizar_categoria_dinamica(categoria_id):
+    access_token = os.environ.get("NUVEMSHOP_ACCESS_TOKEN")
+    store_id = os.environ.get("NUVEMSHOP_STORE_ID")
+
+    headers = {
+        "Authentication": f"bearer {access_token}",
+        "User-Agent": "nuvemshop-seo-bot",
+        "Content-Type": "application/json"
+    }
+
+    url = f"https://api.tiendanube.com/v1/{store_id}/categories/{categoria_id}"
+
+    payload = {
+        "name": {
+            "pt": "Teste SEO"
+        },
+        "description": {
+            "pt": "Categoria de teste"
+        },
+        "seo_title": {
+            "pt": "Teste SEO Dinâmico | Ceramicando"
+        },
+        "seo_description": {
+            "pt": "Teste de atualização dinâmica de SEO via API na Nuvemshop."
+        }
+    }
+
+    response = requests.put(url, headers=headers, json=payload)
+
+    return response.text
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
