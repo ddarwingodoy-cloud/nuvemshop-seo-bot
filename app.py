@@ -301,6 +301,19 @@ def preview_produto_json(produto_id: int):
 
     return jsonify(preview)
 
+#TEMPORARIO
+@app.route("/debug-env")
+def debug_env():
+    access_token = os.environ.get("NUVEMSHOP_ACCESS_TOKEN", "")
+    store_id = os.environ.get("NUVEMSHOP_STORE_ID", "")
+
+    return jsonify({
+        "store_id": store_id,
+        "token_len": len(access_token),
+        "token_prefix": access_token[:6],
+        "token_suffix": access_token[-6:] if access_token else ""
+    })
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
