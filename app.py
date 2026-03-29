@@ -19,9 +19,9 @@ def get_env_credentials():
 
 def get_headers(access_token: str) -> dict:
     return {
-        "Authorization": f"Bearer {access_token}",
-        "User-Agent": "nuvemshop-seo-bot",
-        "Content-Type": "application/json"
+        "Authentication": f"bearer {access_token}",
+        "User-Agent": "SEO Categories Automation (ddarwingodoy@gmail.com)",
+        "Content-Type": "application/json; charset=utf-8"
     }
 
 
