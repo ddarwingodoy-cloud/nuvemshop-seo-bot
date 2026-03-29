@@ -180,6 +180,56 @@ def categoria_revisao(categoria_id: int):
 
     return jsonify(revisao)
 
+    # 4. Json Estruturado
+@app.route("/atualizar-categoria-json/<int:categoria_id>", methods=["POST"])
+def atualizar_categoria_json(categoria_id: int):
+    access_token, store_id = get_env_credentials()
+
+    if not access_token or not store_id:
+        return jsonify({"error": "Variáveis NUVEMSHOP_ACCESS_TOKEN ou NUVEMSHOP_STORE_ID não configuradas"}), 500
+
+    headers = get_headers(access_token)
+    url = f"{BASE_URL}/{store_id}/categories/{categoria_id}"
+
+    # 1. Lê a categoria atual
+    get_response = requests.get(url, headers=headers, timeout=30)
+
+    if get_response.status_code != 200:
+        return get_response.text, get_response.status_code, {"Content-Type": "application/json; charset=utf-8"}
+
+    categoria_atual = get_response.json()
+
+    # 2. Lê o JSON enviado
+    body = request.get_json(silent=True) or {}
+
+    payload = {
+        "name": merge_translations(
+            categoria_atual.get("name", {}),
+            body.get("name", {})
+        ),
+        "description": merge_translations(
+            categoria_atual.get("description", {}),
+            body.get("description", {})
+        ),
+        "handle": merge_translations(
+            categoria_atual.get("handle", {}),
+            body.get("handle", {})
+        ),
+        "seo_title": merge_translations(
+            categoria_atual.get("seo_title", {}),
+            body.get("seo_title", {})
+        ),
+        "seo_description": merge_translations(
+            categoria_atual.get("seo_description", {}),
+            body.get("seo_description", {})
+        ),
+    }
+
+    # 3. Atualiza
+    put_response = requests.put(url, headers=headers, json=payload, timeout=30)
+
+    return put_response.text, put_response.status_code, {"Content-Type": "application/json; charset=utf-8"}
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
