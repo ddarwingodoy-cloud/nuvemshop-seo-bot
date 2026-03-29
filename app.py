@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-BASE_URL = "https://api.tiendanube.com/v1"
+BASE_URL = "https://api.tiendanube.com/2025-03"
 
 
 def get_env_credentials():
