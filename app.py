@@ -360,6 +360,63 @@ def preview_categoria_json(categoria_id: int):
 
     return jsonify(preview)
 
+# 🔹 PREVIEW PRODUTOS
+@app.route("/preview-produto-json/<int:produto_id>", methods=["POST"])
+def preview_produto_json(produto_id: int):
+    access_token, store_id = get_env_credentials()
+
+    if not access_token or not store_id:
+        return jsonify({"error": "Variáveis NUVEMSHOP_ACCESS_TOKEN ou NUVEMSHOP_STORE_ID não configuradas"}), 500
+
+    headers = get_headers(access_token)
+    url = f"{BASE_URL}/{store_id}/products/{produto_id}"
+
+    # 1. Lê o produto atual
+    get_response = requests.get(url, headers=headers, timeout=30)
+
+    if get_response.status_code != 200:
+        return get_response.text, get_response.status_code, {"Content-Type": "application/json; charset=utf-8"}
+
+    produto_atual = get_response.json()
+
+    # 2. Lê o JSON enviado
+    body = request.get_json(silent=True) or {}
+
+    preview = {
+        "id": produto_atual.get("id"),
+        "antes": {
+            "name": produto_atual.get("name", {}),
+            "description": produto_atual.get("description", {}),
+            "handle": produto_atual.get("handle", {}),
+            "seo_title": produto_atual.get("seo_title", {}),
+            "seo_description": produto_atual.get("seo_description", {})
+        },
+        "depois": {
+            "name": merge_translations(
+                produto_atual.get("name", {}),
+                body.get("name", {})
+            ),
+            "description": merge_translations(
+                produto_atual.get("description", {}),
+                body.get("description", {})
+            ),
+            "handle": merge_translations(
+                produto_atual.get("handle", {}),
+                body.get("handle", {})
+            ),
+            "seo_title": merge_translations(
+                produto_atual.get("seo_title", {}),
+                body.get("seo_title", {})
+            ),
+            "seo_description": merge_translations(
+                produto_atual.get("seo_description", {}),
+                body.get("seo_description", {})
+            )
+        }
+    }
+
+    return jsonify(preview)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
