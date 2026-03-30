@@ -301,18 +301,64 @@ def preview_produto_json(produto_id: int):
 
     return jsonify(preview)
 
-#TEMPORARIO
-@app.route("/debug-env")
-def debug_env():
-    access_token = os.environ.get("NUVEMSHOP_ACCESS_TOKEN", "")
-    store_id = os.environ.get("NUVEMSHOP_STORE_ID", "")
+#AUDITORIA BACKEND
+@app.route("/auditoria-seo-produtos", methods=["GET"])
+def auditoria_seo_produtos():
+    import requests
 
-    return jsonify({
-        "store_id": store_id,
-        "token_len": len(access_token),
-        "token_prefix": access_token[:6],
-        "token_suffix": access_token[-6:] if access_token else ""
-    })
+    access_token = ACCESS_TOKEN
+    store_id = STORE_ID
+
+    url = f"https://api.tiendanube.com/v1/{store_id}/products"
+
+    headers = {
+        "Authentication": f"bearer {access_token}",
+        "User-Agent": "nuvemshop-seo-bot",
+        "Content-Type": "application/json"
+    }
+
+    produtos_auditados = []
+    page = 1
+
+    while True:
+        response = requests.get(
+            url,
+            headers=headers,
+            params={"page": page},
+            timeout=30
+        )
+
+        response.raise_for_status()
+        produtos = response.json()
+
+        if not produtos:
+            break
+
+        for p in produtos:
+            seo_title = p.get("seo_title", {})
+            seo_description = p.get("seo_description", {})
+            handle = p.get("handle", {})
+
+            def is_duplicado(campo):
+                valores = list(campo.values())
+                return len(set(valores)) == 1
+
+            produtos_auditados.append({
+                "id": p.get("id"),
+                "name": p.get("name", {}).get("pt"),
+                "handle": handle,
+                "seo_title": seo_title,
+                "seo_description": seo_description,
+                "flags": {
+                    "seo_title_duplicado": is_duplicado(seo_title),
+                    "seo_description_duplicado": is_duplicado(seo_description),
+                    "handle_inconsistente": handle.get("es") == handle.get("pt"),
+                }
+            })
+
+        page += 1
+
+    return {"produtos": produtos_auditados}
 
 
 if __name__ == "__main__":
