@@ -377,13 +377,6 @@ def fetch_all_items(resource: str):
 
     return all_items, None
 
-
-
-        all_items.extend(items)
-        page += 1
-
-    return all_items, None
-
 # AUDITORIA BACKEND
 @app.route("/auditoria-seo-produtos", methods=["GET"])
 def auditoria_seo_produtos():
