@@ -338,7 +338,6 @@ def analyze_translations(field: dict) -> dict:
         "has_issue": bool(missing_languages or all_equal_non_empty or (en and pt and en == pt) or (es and pt and es == pt))
     }
 
-
 def fetch_all_items(resource: str):
     access_token, store_id = get_env_credentials()
     err = error_if_missing_credentials(access_token, store_id)
@@ -358,6 +357,9 @@ def fetch_all_items(resource: str):
             timeout=30
         )
 
+        if response.status_code == 404:
+            break
+
         if response.status_code != 200:
             return None, (
                 response.text,
@@ -369,6 +371,13 @@ def fetch_all_items(resource: str):
 
         if not items:
             break
+
+        all_items.extend(items)
+        page += 1
+
+    return all_items, None
+
+
 
         all_items.extend(items)
         page += 1
