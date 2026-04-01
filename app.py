@@ -225,7 +225,8 @@ def atualizar_categoria_json(categoria_id: int):
         "handle": merge_translations(categoria_atual.get("handle", {}), body.get("handle", {})),
         "seo_title": merge_translations(categoria_atual.get("seo_title", {}), body.get("seo_title", {})),
         "seo_description": merge_translations(categoria_atual.get("seo_description", {}), body.get("seo_description", {})),
-    }
+        "parent": categoria_atual.get("parent"),
+}
 
     description_merged = merge_translations(
         categoria_atual.get("description", {}),
