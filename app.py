@@ -236,8 +236,16 @@ def atualizar_categoria_json(categoria_id: int):
     if has_any_value(description_merged):
         payload["description"] = description_merged
 
-    put_response = requests.put(url, headers=headers, json=payload, timeout=30)
-    return put_response.text, put_response.status_code, {"Content-Type": "application/json; charset=utf-8"}
+    try:
+        put_response = requests.put(url, headers=headers, json=payload, timeout=30)
+        return put_response.text, put_response.status_code, {"Content-Type": "application/json; charset=utf-8"}
+    except Exception as e:
+        return jsonify({
+            "error": "Falha ao atualizar categoria",
+            "categoria_id": categoria_id,
+            "payload_enviado": payload,
+            "detalhe": str(e)
+        }), 500
 
 @app.route("/preview-categoria-json/<int:categoria_id>", methods=["POST"])
 def preview_categoria_json(categoria_id: int):
