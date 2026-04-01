@@ -195,7 +195,10 @@ def categoria_revisao(categoria_id: int):
             "pt": categoria.get("seo_description", {}).get("pt", ""),
             "es": categoria.get("seo_description", {}).get("es", ""),
             "en": categoria.get("seo_description", {}).get("en", "")
-        }
+        },
+        "parent": categoria.get("parent"),
+        "parent_id": categoria.get("parent_id"),
+        "subcategories": categoria.get("subcategories"),
     }
 
     return jsonify(revisao)
