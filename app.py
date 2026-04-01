@@ -46,7 +46,7 @@ def home():
     return "App rodando"
 
 
-@app.route("/produtos")
+@e("/produtos")
 def listar_produtos():
     access_token, store_id = get_env_credentials()
     err = error_if_missing_credentials(access_token, store_id)
@@ -301,64 +301,173 @@ def preview_produto_json(produto_id: int):
 
     return jsonify(preview)
 
-#AUDITORIA BACKEND
-@app.route("/auditoria-seo-produtos", methods=["GET"])
-def auditoria_seo_produtos():
-    import requests
+# AUDITORIA BACKEND
 
-    access_token = ACCESS_TOKEN
-    store_id = STORE_ID
+def normalize_text(value):
+    return (value or "").strip()
 
-    url = f"https://api.tiendanube.com/v1/{store_id}/products"
 
-    headers = {
-        "Authentication": f"bearer {access_token}",
-        "User-Agent": "nuvemshop-seo-bot",
-        "Content-Type": "application/json"
+def get_lang_field(data: dict, field_name: str) -> dict:
+    field = data.get(field_name, {}) or {}
+    return {
+        "pt": normalize_text(field.get("pt")),
+        "en": normalize_text(field.get("en")),
+        "es": normalize_text(field.get("es")),
     }
 
-    produtos_auditados = []
+
+def analyze_translations(field: dict) -> dict:
+    pt = normalize_text(field.get("pt"))
+    en = normalize_text(field.get("en"))
+    es = normalize_text(field.get("es"))
+
+    values = {"pt": pt, "en": en, "es": es}
+    non_empty_values = [v for v in values.values() if v]
+
+    missing_languages = [lang for lang, value in values.items() if not value]
+
+    all_equal_non_empty = (
+        len(non_empty_values) == 3 and len(set(non_empty_values)) == 1
+    )
+
+    return {
+        "missing_languages": missing_languages,
+        "all_equal_non_empty": all_equal_non_empty,
+        "en_equals_pt": bool(en and pt and en == pt),
+        "es_equals_pt": bool(es and pt and es == pt),
+        "has_issue": bool(missing_languages or all_equal_non_empty or (en and pt and en == pt) or (es and pt and es == pt))
+    }
+
+
+def fetch_all_items(resource: str):
+    access_token, store_id = get_env_credentials()
+    err = error_if_missing_credentials(access_token, store_id)
+    if err:
+        return None, err
+
+    headers = get_headers(access_token)
+    all_items = []
     page = 1
 
     while True:
+        url = f"{BASE_URL}/{store_id}/{resource}"
         response = requests.get(
             url,
             headers=headers,
-            params={"page": page},
+            params={"page": page, "per_page": 200},
             timeout=30
         )
 
-        response.raise_for_status()
-        produtos = response.json()
+        if response.status_code != 200:
+            return None, (
+                response.text,
+                response.status_code,
+                {"Content-Type": "application/json; charset=utf-8"}
+            )
 
-        if not produtos:
+        items = response.json()
+
+        if not items:
             break
 
-        for p in produtos:
-            seo_title = p.get("seo_title", {})
-            seo_description = p.get("seo_description", {})
-            handle = p.get("handle", {})
-
-            def is_duplicado(campo):
-                valores = list(campo.values())
-                return len(set(valores)) == 1
-
-            produtos_auditados.append({
-                "id": p.get("id"),
-                "name": p.get("name", {}).get("pt"),
-                "handle": handle,
-                "seo_title": seo_title,
-                "seo_description": seo_description,
-                "flags": {
-                    "seo_title_duplicado": is_duplicado(seo_title),
-                    "seo_description_duplicado": is_duplicado(seo_description),
-                    "handle_inconsistente": handle.get("es") == handle.get("pt"),
-                }
-            })
-
+        all_items.extend(items)
         page += 1
 
-    return {"produtos": produtos_auditados}
+    return all_items, None
+
+# AUDITORIA BACKEND
+@app.route("/auditoria-seo-produtos", methods=["GET"])
+def auditoria_seo_produtos():
+    produtos, err = fetch_all_items("products")
+    if err:
+        return err
+
+    produtos_auditados = []
+
+    for p in produtos:
+        handle = get_lang_field(p, "handle")
+        seo_title = get_lang_field(p, "seo_title")
+        seo_description = get_lang_field(p, "seo_description")
+
+        flags_handle = analyze_translations(handle)
+        flags_seo_title = analyze_translations(seo_title)
+        flags_seo_description = analyze_translations(seo_description)
+
+        has_issue = (
+            flags_handle["has_issue"] or
+            flags_seo_title["has_issue"] or
+            flags_seo_description["has_issue"]
+        )
+
+        produtos_auditados.append({
+            "id": p.get("id"),
+            "name": get_lang_field(p, "name"),
+            "handle": handle,
+            "seo_title": seo_title,
+            "seo_description": seo_description,
+            "flags": {
+                "handle": flags_handle,
+                "seo_title": flags_seo_title,
+                "seo_description": flags_seo_description,
+                "has_issue": has_issue
+            }
+        })
+
+    total_com_problema = sum(1 for item in produtos_auditados if item["flags"]["has_issue"])
+
+    return jsonify({
+        "resource": "products",
+        "total": len(produtos_auditados),
+        "total_com_problema": total_com_problema,
+        "produtos": produtos_auditados
+    })
+
+
+@app.route("/auditoria-seo-categorias", methods=["GET"])
+def auditoria_seo_categorias():
+    categorias, err = fetch_all_items("categories")
+    if err:
+        return err
+
+    categorias_auditadas = []
+
+    for c in categorias:
+        handle = get_lang_field(c, "handle")
+        seo_title = get_lang_field(c, "seo_title")
+        seo_description = get_lang_field(c, "seo_description")
+
+        flags_handle = analyze_translations(handle)
+        flags_seo_title = analyze_translations(seo_title)
+        flags_seo_description = analyze_translations(seo_description)
+
+        has_issue = (
+            flags_handle["has_issue"] or
+            flags_seo_title["has_issue"] or
+            flags_seo_description["has_issue"]
+        )
+
+        categorias_auditadas.append({
+            "id": c.get("id"),
+            "name": get_lang_field(c, "name"),
+            "handle": handle,
+            "seo_title": seo_title,
+            "seo_description": seo_description,
+            "flags": {
+                "handle": flags_handle,
+                "seo_title": flags_seo_title,
+                "seo_description": flags_seo_description,
+                "has_issue": has_issue
+            }
+        })
+
+    total_com_problema = sum(1 for item in categorias_auditadas if item["flags"]["has_issue"])
+
+    return jsonify({
+        "resource": "categories",
+        "total": len(categorias_auditadas),
+        "total_com_problema": total_com_problema,
+        "categorias": categorias_auditadas
+    })
 
 
 if __name__ == "__main__":
