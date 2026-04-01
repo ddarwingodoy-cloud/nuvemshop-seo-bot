@@ -46,7 +46,7 @@ def home():
     return "App rodando"
 
 
-@e("/produtos")
+@app.route("/produtos")
 def listar_produtos():
     access_token, store_id = get_env_credentials()
     err = error_if_missing_credentials(access_token, store_id)
