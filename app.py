@@ -40,6 +40,10 @@ def merge_translations(current: dict, updates: dict) -> dict:
             merged[lang] = value
     return merged
 
+def has_any_value(translations: dict) -> bool:
+    if not translations:
+        return False
+    return any((value or "").strip() for value in translations.values())
 
 @app.route("/")
 def home():
@@ -214,13 +218,20 @@ def atualizar_categoria_json(categoria_id: int):
     categoria_atual = get_response.json()
     body = request.get_json(silent=True) or {}
 
-    payload = {
-        "name": merge_translations(categoria_atual.get("name", {}), body.get("name", {})),
-        "description": merge_translations(categoria_atual.get("description", {}), body.get("description", {})),
-        "handle": merge_translations(categoria_atual.get("handle", {}), body.get("handle", {})),
-        "seo_title": merge_translations(categoria_atual.get("seo_title", {}), body.get("seo_title", {})),
-        "seo_description": merge_translations(categoria_atual.get("seo_description", {}), body.get("seo_description", {})),
-    }
+payload = {
+    "name": merge_translations(categoria_atual.get("name", {}), body.get("name", {})),
+    "handle": merge_translations(categoria_atual.get("handle", {}), body.get("handle", {})),
+    "seo_title": merge_translations(categoria_atual.get("seo_title", {}), body.get("seo_title", {})),
+    "seo_description": merge_translations(categoria_atual.get("seo_description", {}), body.get("seo_description", {})),
+}
+
+description_merged = merge_translations(
+    categoria_atual.get("description", {}),
+    body.get("description", {})
+)
+
+if has_any_value(description_merged):
+    payload["description"] = description_merged
 
     put_response = requests.put(url, headers=headers, json=payload, timeout=30)
     return put_response.text, put_response.status_code, {"Content-Type": "application/json; charset=utf-8"}
